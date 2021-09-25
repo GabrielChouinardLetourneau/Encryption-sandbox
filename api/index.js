@@ -11,6 +11,9 @@ const mockUser = {
 
 // Add sub-routes
 app.post("/login", (req, res) => {
+
+  if (req.params.pw !== mockUser.pw) return res.status(401).redirect("/").end()
+
   let key = window.crypto.subtle.generateKey(
     {
       name: "AES-GCM",
@@ -45,22 +48,9 @@ app.post("/login", (req, res) => {
       console.error(err);
   });
 
-  
-});
 
-app.post("/encryptData", (req, res) => {
-  let buffedData
-
-  let key = window.crypto.subtle.generateKey(
-    {
-      name: "AES-GCM",
-      length: 256
-    },
-    true,
-    ["derive", "encrypt", "decrypt"]
-  );
   // Encrypt
-  window.crypto.subtle.encrypt(
+  const buffer = window.crypto.subtle.encrypt(
     {
         name: "AES-GCM",
 
@@ -75,16 +65,35 @@ app.post("/encryptData", (req, res) => {
         //Tag length (optional)
         tagLength: 128, //can be 32, 64, 96, 104, 112, 120 or 128 (default)
     },
-    key, //from generateKey or importKey above
-    req.data //ArrayBuffer of data you want to encrypt
+    derivedKey, //from generateKey or importKey above
+    req.pw //ArrayBuffer of data you want to encrypt
   )
   .then(function(encrypted){
       //returns an ArrayBuffer containing the encrypted data
-      buffedData = console.log(new Uint8Array(encrypted));
+      return new Uint8Array(encrypted);
   })
   .catch(function(err){
       console.error(err);
   });
+
+  const encoded = Buffer.from(buffer).toString("base64")
+
+
+
+});
+
+app.post("/encryptSecretData", (req, res) => {
+  let buffedData
+
+  let key = window.crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256
+    },
+    true,
+    ["derive", "encrypt", "decrypt"]
+  );
+
 
 
   window.crypto.subtle.decrypt(
