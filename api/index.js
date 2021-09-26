@@ -1,63 +1,111 @@
 const express = require("express");
 const app = express();  //Create new instance
 const PORT = process.env.PORT || 8888; //Declare the port number
-app.use(express.json()); //allows us to access request body as req.body
- 
+const cors = require("cors")
+const helmet = require("helmet");
+const crypto  = require("crypto").webcrypto;
+const session = require('express-session');
+
+app.use(cors())
+app.use(express.json());
+app.use(helmet());
 
 const mockUser = {
-  user: "GabrielChouinardLetourneau",
+  username: "GCL",
   pw: "root"
 }
 
+const salt = crypto.getRandomValues(new Uint8Array(16))
+
+app.use(session({
+  secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
+  saveUninitialized:true,
+  cookie: { 
+    maxAge:  1000 * 60 * 60 * 24,
+  },
+  resave: false 
+}));
+
+// app.use(express.session({ secret: "keyboard cat" }));
+// app.use(passport.session());
+
+
+app.use("/login", function (req, res, next) {
+  const { username, password } = req.body
+  if (password !== mockUser.pw && username !== mockUser.username) {  
+    res.status(401).json({})
+    return
+  }
+  next()
+})
+
+
 // Add sub-routes
-app.post("/login", (req, res) => {
+app.post("/login", 
+  async (req, res) => {
+    const { username, password } = req.body
+    req.session.username = username;
 
-  if (req.params.pw !== mockUser.pw) return res.status(401).redirect("/").end()
+    const buffedPw = Buffer.from([password])
 
-  let key = window.crypto.subtle.generateKey(
+    const key = await crypto.subtle.importKey(
+      "raw", //only "raw" is allowed
+      buffedPw, //your password
+      {
+          name: "PBKDF2",
+      },
+      false, //whether the key is extractable (i.e. can be used in exportKey)
+      ["deriveKey"] //can be any combination of "deriveKey" and "deriveBits"
+    )
+    .then(function(importedKey){
+        return crypto.subtle.deriveKey(
+          {
+            name: "PBKDF2",
+            salt: salt,
+            iterations: 1000,
+            hash: { name: "SHA-512" }
+          }, 
+          importedKey,
+          {
+              name: "HMAC",
+              hash: "SHA-512",
+              length: 512
+          },
+          true,
+          ["sign"]
+        )
+    })
+    .catch(function(err){
+        console.error("importKey err-----", err);
+    });
+    console.log("importKey res-----", key);
+    req.session.key = key;
+    console.log(req.session);
+    res.status(200).send({})
+  }
+);
+
+app.post("/encrypt-infos", (req, res) => {
+  console.log(req);
+
+  let key = crypto.subtle.generateKey(
     {
       name: "AES-GCM",
       length: 256
     },
     true,
-    ["derive", "encrypt", "decrypt"]
+    ["encrypt"]
   );
 
-  // Derive
-  let derivedKey = window.crypto.subtle.deriveKey(
-    {
-        "name": "PBKDF2",
-        salt: window.crypto.getRandomValues(new Uint8Array(16)),
-        iterations: 1000,
-        hash: {name: "SHA-1"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-    },
-    key, //your key from generateKey or importKey
-    { //the key type you want to create based on the derived bits
-        name: "AES-CTR", //can be any AES algorithm ("AES-CTR", "AES-CBC", "AES-CMAC", "AES-GCM", "AES-CFB", "AES-KW", "ECDH", "DH", or "HMAC")
-        //the generateKey parameters for that type of algorithm
-        length: 256, //can be  128, 192, or 256
-    },
-    false, //whether the derived key is extractable (i.e. can be used in exportKey)
-    ["encrypt", "decrypt"] //limited to the options in that algorithm's importKey
-  )
-  .then(function(key){
-      //returns the derived key
-      return key
-  })
-  .catch(function(err){
-      console.error(err);
-  });
-
-
-  // Encrypt
-  const buffer = window.crypto.subtle.encrypt(
+  const iv = ArrayBuffer(12)
+  const buffedData = crypto.subtle.encrypt(
     {
         name: "AES-GCM",
 
         //Don't re-use initialization vectors!
         //Always generate a new iv every time your encrypt!
         //Recommended to use 12 bytes length
-        iv: window.crypto.getRandomValues(new Uint8Array(12)),
+        iv: iv,
 
         //Additional authentication data (optional)
         additionalData: ArrayBuffer,
@@ -65,41 +113,38 @@ app.post("/login", (req, res) => {
         //Tag length (optional)
         tagLength: 128, //can be 32, 64, 96, 104, 112, 120 or 128 (default)
     },
-    derivedKey, //from generateKey or importKey above
-    req.pw //ArrayBuffer of data you want to encrypt
+    key, //from generateKey or importKey above
+    req.body //ArrayBuffer of data you want to encrypt
   )
   .then(function(encrypted){
       //returns an ArrayBuffer containing the encrypted data
-      return new Uint8Array(encrypted);
+      console.log(new Uint8Array(encrypted));
+      return encrypted;
   })
   .catch(function(err){
       console.error(err);
   });
 
-  const encoded = Buffer.from(buffer).toString("base64")
-
-
-
+  const encoded = Buffer.from(buffedData).toString('base64')
 });
 
-app.post("/encryptSecretData", (req, res) => {
-  let buffedData
-
-  let key = window.crypto.subtle.generateKey(
+app.post("/decryptSecretData", (req, res) => {
+  console.log(req);
+  let key = crypto.subtle.generateKey(
     {
       name: "AES-GCM",
       length: 256
     },
     true,
-    ["derive", "encrypt", "decrypt"]
+    ["decrypt"]
   );
 
+  const iv = ArrayBuffer(12)
 
-
-  window.crypto.subtle.decrypt(
+  crypto.subtle.decrypt(
     {
         name: "AES-GCM",
-        iv: ArrayBuffer(12), //The initialization vector you used to encrypt
+        iv: iv, //The initialization vector you used to encrypt
         additionalData: ArrayBuffer, //The addtionalData you used to encrypt (if any)
         tagLength: 128, //The tagLength you used to encrypt (if any)
     },

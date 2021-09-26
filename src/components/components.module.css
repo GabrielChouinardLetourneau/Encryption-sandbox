@@ -1,0 +1,93 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.form {
+  width: 600px;
+}
+
+.row > button {
+  margin-left: 4px;
+  margin-right: 8px;
+}
+
+.row:not(:last-child) {
+  margin-bottom: 16px;
+}
+
+.value {
+  font-size: 78px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-top: 2px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.button {
+  appearance: none;
+  background: none;
+  font-size: 32px;
+  padding-left: 12px;
+  padding-right: 12px;
+  outline: none;
+  border: none;
+  color: #fff;
+  padding-bottom: 4px;
+  cursor: pointer;
+  background-color: rgb(22, 92, 124);
+  border-radius: 2px;
+  transition: all 0.15s ease-in-out;
+  margin-top: 0.5em;
+}
+
+.textbox {
+  font-size: 20px;
+  padding: 2px;
+  width: 100%;
+  text-align: left;
+  margin-right: 4px;
+  margin-bottom: 20px;
+}
+
+.error {
+  color: red;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.button:hover,
+.button:focus {
+  transform: scale(1.1);
+}
+
+.button:active {
+  background-color: #fff;
+  color: rgb(22, 92, 124);
+}
+
+.asyncButton {
+  composes: button;
+  position: relative;
+}
+
+.asyncButton:after {
+  content: '';
+  background-color: rgba(112, 76, 182, 0.15);
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transition: width 1s linear, opacity 0.5s ease 1s;
+}
+
+.asyncButton:active:after {
+  width: 0%;
+  opacity: 1;
+  transition: 0s;
+}

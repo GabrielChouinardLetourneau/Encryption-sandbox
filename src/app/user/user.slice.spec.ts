@@ -1,26 +1,26 @@
 import counterReducer, {
-  UserState,
+  LoadingStatus,
+  UserState, UserStatus,
 } from './user.slice';
 
 describe('counter reducer', () => {
   const initialState: UserState = {
     currentUser: {
-      name: 'foo',
+      username: 'foo',
       pw: 'bar'
     },
-    loggedIn: false,
-    status: 'idle',
+    userStatus: UserStatus.LOGGED_OUT,
+    loadingStatus: LoadingStatus.IDLE,
   };
   it('should handle initial state', () => {
     expect(counterReducer(undefined, { type: 'unknown' })).toEqual({
-      value: 0,
+      currentUser: {
+        username: 'foo',
+        pw: 'bar'
+      },
       loggedIn: false,
       status: 'idle',
     });
   });
 
-  // it('should handle incrementByAmount', () => {
-  //   const actual = counterReducer(initialState, incrementByAmount(2));
-  //   expect(actual.value).toEqual(5);
-  // });
 });
