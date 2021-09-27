@@ -8,10 +8,6 @@ redux-create-app.md
 /.pnp
 .pnp.js
 
-# env
-.env
-.env.development 
-
 # testing
 /coverage
 

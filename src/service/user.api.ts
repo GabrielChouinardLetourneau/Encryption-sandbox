@@ -1,5 +1,5 @@
 import axios from "axios";
-import { User, LoginResponse } from "../app/user/user.types";
+import { User, LoginResponse, PrivateInfos, EncryptInfosResponse, DecryptInfosResponse, PrivateInfosKey } from "../app/user/user.types";
 
 const axiosInstance = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -12,41 +12,71 @@ const axiosInstance = axios.create({
 export async function loginToAPI(user : User): Promise<LoginResponse> {
   try {
     await axiosInstance({
-      url: `/login`,
+      url: "/user/login",
       method: "POST",
       data: user,
     })
     return {
       ok: true,
+      loggedIn: true,
       message: "Login successful"
     }
   }   
   catch (error: any) {
-    console.log(error);
+    console.error(error);
     return {
       ok: false,
+      loggedIn: false,
       message: "Unauthorized user"
     }
   }
 }
 
-export async function encryptInfos(infos : string): Promise<LoginResponse> {
+export async function encryptInfos(infos : PrivateInfos): Promise<EncryptInfosResponse> {
+  
   try {
-    await axiosInstance({
-      url: `/encrypt-infos`,
+    const response = await axiosInstance({
+      url: "/user/encrypt-infos",
       method: "POST",
       data: infos,
     })
+
     return {
       ok: true,
+      key: response.data.key,
       message: "Informations saved"
     }
   }   
   catch (error: any) {
-    console.log(error);
+    console.error(error);
     return {
       ok: false,
-      message: "Unauthorized user"
+      key: "",
+      message: "Informations could not be saved",
+    }
+  }
+}
+
+export async function decryptInfos(key : PrivateInfosKey): Promise<DecryptInfosResponse> {  
+  try {
+    const response = await axiosInstance({
+      url: "/user/decrypt-infos",
+      method: "POST",
+      data: key,
+    })
+
+    return {
+      ok: true,
+      infos: response.data.infos,
+      message: "Informations retrieved"
+    }
+  }   
+  catch (error: any) {
+    console.error(error);
+    return {
+      ok: false,
+      infos: "",
+      message: "Decryption error"
     }
   }
 }

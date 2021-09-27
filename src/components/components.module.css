@@ -58,6 +58,12 @@
   font-weight: bold;
 }
 
+.ok {
+  color: green;
+  font-size: 18px;
+  font-weight: bold; 
+}
+
 .button:hover,
 .button:focus {
   transform: scale(1.1);

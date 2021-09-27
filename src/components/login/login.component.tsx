@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import Loader from "react-loader-spinner";
 import { useHistory } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import {
+  LoadingStatus,
   loginUser,
   reset,
   selectUser,
@@ -10,26 +12,20 @@ import { LoginResponse } from "../../app/user/user.types";
 import componentsStyles from "../components.module.css";
 
 export function Login() {
-  const { currentUser, userStatus, statusMessage } = useAppSelector(selectUser);
+  const { currentUser, loadingStatus, userStatus, status } = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   const history = useHistory();
   const [username, setUsername] = useState<string>("");
   const [pw, setPw] = useState<string>("");
 
-  // useEffect(() => {
-  //   // console.log(loggedIn);
-  //  dispatch(reset());
-  // }, [])
-
   useEffect(() => {
-    // console.log(loggedIn);
+  console.log("userStatus___", userStatus);
+  console.log("loadingStatus___", loadingStatus);
+   dispatch(reset());
+  }, [loadingStatus, userStatus])
 
-    // if (loggedIn) history.push("/informations");
-  }, [userStatus])
-
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("handleLogin");
     const response = await dispatch(loginUser({ username, pw }))
     if ((response.payload as LoginResponse).ok) history.push("/informations")
   }
@@ -37,33 +33,44 @@ export function Login() {
   return (
     <>
       <div className={componentsStyles.row}>
+        {loadingStatus === LoadingStatus.LOADING ? (
+          <Loader
+            type="Rings"
+            color="rgb(22, 92, 124)"
+            height={100}
+            width={100}
+            timeout={3000} //3 secs
+          />
+        ) : (
+          <>
+            <p className={componentsStyles.error}>{status.message}</p>
+            <form action="/" onSubmit={(e) => handleSubmit(e)}>
+              <input
+                className={componentsStyles.textbox}
+                type="text"
+                aria-label="Enter your username"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
 
-        <p className={componentsStyles.error}>{statusMessage}</p>
-        <form action="/" onSubmit={(e) => handleSubmit(e)}>
-          <input
-            className={componentsStyles.textbox}
-            type="text"
-            aria-label="Enter your username"
-            placeholder="Enter username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-
-          <input
-            className={componentsStyles.textbox}
-            type="password"
-            autoComplete="off"
-            aria-label="Enter your password"
-            placeholder="Enter password"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-          />
-          <input 
-            className={componentsStyles.button}  
-            type="submit" 
-            value="Login"
-          />
-        </form> 
+              <input
+                className={componentsStyles.textbox}
+                type="password"
+                autoComplete="off"
+                aria-label="Enter your password"
+                placeholder="Enter password"
+                value={pw}
+                onChange={(e) => setPw(e.target.value)}
+              />
+              <input 
+                className={componentsStyles.button}  
+                type="submit" 
+                value="Login"
+              />
+            </form> 
+          </>
+        )}
       </div>
     </>
   );

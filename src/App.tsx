@@ -1,15 +1,21 @@
+import { Route } from "react-router-dom";
+import { useEffect } from "react";
 import logo from "./lmi.svg";
 import { Login } from "./components/login/login.component";
 import "./App.css";
 import { useAppSelector } from "./app/hooks";
 import { selectUser } from "./app/user/user.slice";
 import { PrivateInfos } from "./components/private-infos/private-infos.component";
-import { Route } from "react-router-dom";
+
 
 function App() {
   const { userStatus } = useAppSelector(selectUser);
 
-  // console.log(loggedIn, status);
+
+  useEffect(() => {
+  console.log(userStatus);
+    
+  }, [userStatus])
 
   return (
     <div className="App">
