@@ -11,14 +11,16 @@ const axiosInstance = axios.create({
 
 export async function loginToAPI(user : User): Promise<LoginResponse> {
   try {
-    await axiosInstance({
+    const response = await axiosInstance({
       url: "/user/login",
       method: "POST",
       data: user,
     })
+    console.log(response);
     return {
       ok: true,
-      loggedIn: true,
+      username: response.data.username,
+      userKey: response.data.userKey,
       message: "Login successful"
     }
   }   
@@ -26,7 +28,8 @@ export async function loginToAPI(user : User): Promise<LoginResponse> {
     console.error(error);
     return {
       ok: false,
-      loggedIn: false,
+      username: null,
+      userKey: null,
       message: "Unauthorized user"
     }
   }

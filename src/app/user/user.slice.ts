@@ -17,7 +17,6 @@ export enum UserStatus {
 export interface UserState {
   currentUser: {
     username: string
-    pw: string
     infos?: string
   };
   userStatus: UserStatus;
@@ -31,7 +30,6 @@ export interface UserState {
 const initialState: UserState = {
   currentUser: {
     username: '',
-    pw: '',
   },
   status: {
     ok: false,
@@ -45,6 +43,7 @@ export const loginUser = createAsyncThunk(
   'user/login',
   async (user: User): Promise<LoginResponse> => {
     const response = await loginToAPI(user);
+    console.log("slice response___", response);
     return response;
   }
 );
@@ -83,8 +82,14 @@ export const userSlice = createSlice({
       (state, action) => {
         if (state.loadingStatus !== LoadingStatus.IDLE) {
           state.loadingStatus = LoadingStatus.IDLE;
+          state.userStatus = UserStatus.LOGGED_IN;
+          console.log("action.payload___", action.payload);
+          if (action.payload.username && action.payload.userKey) {
+            state.currentUser.username = action.payload.username;
+            sessionStorage.setItem("user", action.payload.username);
+            sessionStorage.setItem("user-key", action.payload.userKey);
+          }
           
-          if (action.payload.loggedIn) sessionStorage.setItem("loggedIn", "true");
           state.status.message = action.payload.message;
           state.status.ok = action.payload.ok;
         }

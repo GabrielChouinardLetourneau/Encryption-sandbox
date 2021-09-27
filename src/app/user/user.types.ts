@@ -13,7 +13,8 @@ export interface PrivateInfosKey {
 
 export interface LoginResponse {
   ok: boolean
-  loggedIn: boolean
+  username: string | null
+  userKey: string | null
   message: string
 }
 

@@ -19,14 +19,13 @@ export function Login() {
   const [pw, setPw] = useState<string>("");
 
   useEffect(() => {
-  console.log("userStatus___", userStatus);
-  console.log("loadingStatus___", loadingStatus);
-   dispatch(reset());
-  }, [loadingStatus, userStatus])
+    console.log(status.message);
+  }, [loadingStatus, status])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const response = await dispatch(loginUser({ username, pw }))
+    console.log((response.payload as LoginResponse));
     if ((response.payload as LoginResponse).ok) history.push("/informations")
   }
 
@@ -39,14 +38,17 @@ export function Login() {
             color="rgb(22, 92, 124)"
             height={100}
             width={100}
-            timeout={3000} //3 secs
+            timeout={3000} 
           />
         ) : (
           <>
-            <p className={componentsStyles.error}>{status.message}</p>
+            {status.message && (
+              <p className={componentsStyles.error}>{status.message}</p>
+            )}
             <form action="/" onSubmit={(e) => handleSubmit(e)}>
               <input
                 className={componentsStyles.textbox}
+                required  
                 type="text"
                 aria-label="Enter your username"
                 placeholder="Enter username"
@@ -56,6 +58,7 @@ export function Login() {
 
               <input
                 className={componentsStyles.textbox}
+                required
                 type="password"
                 autoComplete="off"
                 aria-label="Enter your password"

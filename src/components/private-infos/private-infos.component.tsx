@@ -7,14 +7,12 @@ import componentsStyles from "../components.module.css";
 
 
 export function PrivateInfos() {
-  const { currentUser, loadingStatus, userStatus, status } = useAppSelector(selectUser);
+  const { currentUser, loadingStatus, status } = useAppSelector(selectUser);
   const [currentInfos, setCurrentInfos] = useState<string>('');
   const dispatch = useAppDispatch();
   const history = useHistory();
 
   useEffect(() => {
-    console.log("userStatus___", userStatus);
-    console.log("loadingStatus___", loadingStatus);
     const dataStored = sessionStorage.getItem("key")
     if (dataStored) {
       dispatch(retrieveInfos({ key: dataStored }))
@@ -29,7 +27,6 @@ export function PrivateInfos() {
 
   const logout = () => {
     dispatch(reset())
-    sessionStorage.removeItem("loggedIn")
     history.push("/")
   }
 
@@ -41,11 +38,12 @@ export function PrivateInfos() {
           color="rgb(22, 92, 124)"
           height={100}
           width={100}       
-          timeout={3000} //3 secs
+          timeout={3000}
         />
       ) : (
         <>
           <form action="/informations" onBlur={(e) => handleSubmit(e)} className={componentsStyles.form}>
+            <h2>Hello {currentUser.username}</h2>
             <p className={status.ok ? componentsStyles.ok : componentsStyles.error}>{status.message}</p>
             <textarea 
               className={componentsStyles.textbox}

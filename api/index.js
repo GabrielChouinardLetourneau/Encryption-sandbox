@@ -1,49 +1,58 @@
 const express = require("express");
-require('dotenv').config()
-const app = express();  //Create new instance
-const PORT = process.env.PORT || 8888; //Declare the port number
+require("dotenv").config()
+const app = express();
+const PORT = process.env.PORT || 8888; 
 const cors = require("cors")
 const helmet = require("helmet");
 const crypto  = require("crypto").webcrypto;
-const session = require("express-session");
-const decrypt = require('./utils.js');
+const decrypt = require("./utils.js");
 
 app.use(cors())
 app.use(express.json());
 app.use(helmet());
 
-const mockUser = {
-  username: process.env.MOCK_USER_NAME,
-  pw: process.env.MOCK_USER_PW
-}
+const mockUsers = 
+  [
+    {
+      id: "f9beba28-8d3a-4e0a-9efe-0768f42e362e",
+      username: "root",
+      pw: "root"
+    },
+    {
+      id: "ecf48458-7833-45e1-8f48-744fcbdbc6be",
+      username: "GCL",
+      pw: "nU8TyK7@^EQW"
+    },
+    {
+      id: "275348ca-b5bb-40d1-9370-acb47264c53a",
+      username: "admin@logmein.com",
+      pw: "AYPpSndfom$A"
+    },
+  ]
+
 
 const salt = crypto.getRandomValues(new Uint8Array(16))
 
-const sessionMiddleware = session({
-  secret: process.env.SECRET_DEFAULT,
-  saveUninitialized:true,
-  cookie: { 
-    maxAge:  1000 * 60 * 60 * 24,
-  },
-  resave: false 
-});
-app.use(sessionMiddleware);
+function authMiddleware(req, res, next) {
+  try {
+    const { username } = req.body
 
-
-app.use("/login", function (req, res, next) {
-  const { username, password } = req.body
-  if (password !== mockUser.pw && username !== mockUser.username) {  
-    res.status(401).json({})
-    return
+    if (!mockUsers.find(usr => usr.username === username)) {
+      res.status(401).json({});
+    } else {
+      next();
+    }
+  } catch {
+    res.status(401).json({});
   }
-  next()
-})
-
+}
 
 // Add sub-routes
 app.post("/user/login", 
+  authMiddleware, 
   async (req, res, next) => {
     const { username, password } = req.body
+    console.log(username, password);
     const buffedPw = Buffer.from([password])
 
     const key = await crypto.subtle.importKey(
@@ -79,11 +88,9 @@ app.post("/user/login",
 
     const encodedKey = Buffer.from(JSON.stringify(key)).toString("base64")
 
-    req.session.username = username;
-    req.session.key = encodedKey;
-    req.session.save();
-
-    res.status(200).send({});
+    res.status(200).send({ 
+      username: username, userKey: encodedKey 
+    });
     return
   }
 );
@@ -136,8 +143,8 @@ app.post("/user/decrypt-infos", async (req, res) => {
     ["encrypt", "decrypt"] 
   )
   .then(async function(key){
+    // Source of Cipher job failed
     const decrypted = await decrypt(algDecrypt, key, buffedInfos)
-    console.log(decrypted);
   })
   .catch(function(err){
     throw new Error(err)

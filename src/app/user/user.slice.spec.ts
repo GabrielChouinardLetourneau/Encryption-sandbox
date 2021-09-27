@@ -7,9 +7,12 @@ describe('counter reducer', () => {
   const initialState: UserState = {
     currentUser: {
       username: 'foo',
-      pw: 'bar'
     },
     userStatus: UserStatus.LOGGED_OUT,
+    status: {
+      ok: false,
+      message: '',
+    },
     loadingStatus: LoadingStatus.IDLE,
   };
   it('should handle initial state', () => {

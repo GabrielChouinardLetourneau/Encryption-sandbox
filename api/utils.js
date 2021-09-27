@@ -2,7 +2,6 @@ const crypto  = require("crypto").webcrypto;
 
 module.exports = async function decrypt(alg, key, data) {
   let decrypted
-  console.log(alg);
   try {
     // Couldn't fix the Error: Cipher job failed
     decrypted = await crypto.subtle.decrypt(
