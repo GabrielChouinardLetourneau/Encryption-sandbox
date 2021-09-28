@@ -5,14 +5,13 @@ import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import {
   LoadingStatus,
   loginUser,
-  reset,
   selectUser,
 } from "../../app/user/user.slice";
 import { LoginResponse } from "../../app/user/user.types";
 import componentsStyles from "../components.module.css";
 
 export function Login() {
-  const { currentUser, loadingStatus, userStatus, status } = useAppSelector(selectUser);
+  const { loadingStatus, status } = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   const history = useHistory();
   const [username, setUsername] = useState<string>("");

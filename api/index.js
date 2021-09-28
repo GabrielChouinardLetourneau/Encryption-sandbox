@@ -145,6 +145,7 @@ app.post("/user/decrypt-infos", async (req, res) => {
   .then(async function(key){
     // Source of Cipher job failed
     const decrypted = await decrypt(algDecrypt, key, buffedInfos)
+    console.log(decrypted);
   })
   .catch(function(err){
     throw new Error(err)
