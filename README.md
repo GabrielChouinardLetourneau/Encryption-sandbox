@@ -1,4 +1,4 @@
-# Code challenge
+# NodeJS encryption sandbox
 Repo sandbox working with encryption with NodeJS (WebCrypto API)
 
 ## Known issues
