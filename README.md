@@ -1,5 +1,5 @@
 # Code challenge
-Public repo used for a code challenge I received, first time working with encryption (WebCrypto API)
+Repo sandbox working with encryption with NodeJS (WebCrypto API)
 
 ## Known issues
 * Decryption fails when infos were stored, ```cyper job failed``` error is thrown
